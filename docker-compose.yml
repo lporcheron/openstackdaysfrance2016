@@ -1,0 +1,54 @@
+
+version: '2'
+
+services:
+
+    telegraf:
+        container_name: telegraf
+        image: telegraf
+        network_mode: "host"
+        pid: "host"
+        ports:
+            - "8125:8125/udp"
+        volumes:
+            - /home/docker/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+            - bleemeo-telegraf-configuration:/etc/telegraf/telegraf.d:ro
+            - /:/hostroot:ro
+            - /var/run/docker.sock:/var/run/docker.sock
+
+    influxdb:
+        container_name: influxdb
+        image: influxdb
+        ports:
+           - 8083:8083
+           - 8086:8086
+
+    grafana:
+        image: grafana/grafana
+        ports:
+            - 3000:3000
+
+    redis:
+        image: redis
+        ports:
+           - 6379:6379
+
+    bleemeo-agent:
+        image: bleemeo/bleemeo-agent
+        network_mode: "host"
+        pid: "host"
+        ports:
+            - "2003:2003"
+            - "8015:8015"
+        volumes:
+            - bleemeo-telegraf-configuration:/etc/telegraf/telegraf.d/
+            - bleemeo-agent-data:/var/lib/bleemeo
+            - /home/docker/agent.conf:/etc/bleemeo/agent.conf:ro
+            - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+    bleemeo-agent-data:
+        external: false
+
+    bleemeo-telegraf-configuration:
+        external: false
